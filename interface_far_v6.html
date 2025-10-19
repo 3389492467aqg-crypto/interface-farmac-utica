@@ -1,0 +1,2565 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr.go - Farmacêutico</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary-color: #6a1b9a;
+            --primary-light: #9c4dcc;
+            --primary-dark: #38006b;
+            --text-light: #ffffff;
+            --background-light: #f5f5f5;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --error-color: #f44336;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: var(--primary-color);
+            color: var(--text-light);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            background: var(--primary-dark);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-item {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            color: white;
+        }
+
+        .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            border-bottom: 3px solid var(--text-light);
+        }
+
+        .nav-item i {
+            margin-right: 5px;
+        }
+
+        .main-content {
+            padding: 0;
+        }
+
+        .page {
+            display: none;
+            padding: 25px;
+            min-height: 500px;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .page-title {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.4rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--primary-dark);
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.3s ease;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .btn {
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-danger {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #388e3c;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #f57c00;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+
+        .consultation-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .patient-name {
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+        }
+
+        .consultation-date {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .consultation-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-completed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-searching {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-in-call {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .consultation-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .searching-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .searching-indicator .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e3f2fd;
+            border-top: 2px solid #2196f3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            margin: 25px 0 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .profile-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .profile-field {
+            margin-bottom: 15px;
+        }
+
+        .profile-label {
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+        }
+
+        .profile-value {
+            color: #333;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .consultation-details {
+            margin-bottom: 20px;
+        }
+
+        .detail-row {
+            display: flex;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            width: 150px;
+            color: var(--primary-dark);
+        }
+
+        .detail-value {
+            flex: 1;
+        }
+
+        /* Estilos para fotos */
+        .photo-section {
+            margin-bottom: 20px;
+        }
+
+        .photo-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .photo-preview {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #e0e0e0;
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .photo-preview .remove-photo {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+
+        .photos-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .photo-item {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #e0e0e0;
+            cursor: pointer;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* JANELA DE CHAMADA MINIMIZADA PARA MOBILE */
+        .call-window {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 15px;
+            z-index: 9999;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            display: none;
+        }
+
+        .call-window.active {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        .call-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .call-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .call-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .call-body {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .call-info {
+            flex: 1;
+        }
+
+        .call-timer {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .call-status {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .call-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .call-action-btn {
+            border: none;
+            border-radius: 20px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            min-width: auto;
+        }
+
+        .call-action-btn.mute {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .call-action-btn.mute:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .call-action-btn.mute.active {
+            background: var(--warning-color);
+        }
+
+        .call-action-btn.complete {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .call-action-btn.complete:hover {
+            background: #388e3c;
+        }
+
+        .call-action-btn.end {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .call-action-btn.end:hover {
+            background: #d32f2f;
+        }
+
+        /* Modal de Imagem Ampliada */
+        .image-modal {
+            background: rgba(0,0,0,0.9);
+            z-index: 8000;
+        }
+
+        .image-modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .image-modal-body {
+            padding: 0;
+            position: relative;
+            text-align: center;
+        }
+
+        .image-modal img {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 8px;
+        }
+
+        .image-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .image-nav:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .image-nav.prev {
+            left: 8px;
+        }
+
+        .image-nav.next {
+            right: 8px;
+        }
+
+        .image-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .image-counter {
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            right: 0;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        /* Confirmação de Hangup */
+        .confirmation-modal .modal-content {
+            max-width: 400px;
+        }
+
+        .confirmation-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .consultation-actions {
+                flex-direction: column;
+            }
+            
+            .profile-actions {
+                flex-direction: column;
+            }
+            
+            .detail-row {
+                flex-direction: column;
+            }
+            
+            .detail-label {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+
+            .call-body {
+                flex-direction: column;
+                gap: 8px;
+                align-items: stretch;
+            }
+
+            .call-actions {
+                justify-content: center;
+            }
+
+            .call-action-btn {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .call-action-btn {
+                font-size: 0.75rem;
+                padding: 6px 10px;
+            }
+
+            .call-timer {
+                font-size: 1rem;
+            }
+
+            .call-title {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header" id="app-header">
+            <div class="logo">
+                <i class="fas fa-stethoscope"></i>
+                <h1>Dr.go - Farmacêutico</h1>
+            </div>
+            <p>Sistema de Consulta a Distância</p>
+        </div>
+
+        <nav class="nav-menu" id="nav-menu" style="display: none;">
+            <div class="nav-item active" data-page="consultation-request">
+                <i class="fas fa-plus-circle"></i>
+                <span>Nova Consulta</span>
+            </div>
+            <div class="nav-item" data-page="my-data">
+                <i class="fas fa-user"></i>
+                <span>Os Meus</span>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="page active" id="auth-page">
+                <h2 class="page-title">Dr.go - Área do Farmacêutico</h2>
+                
+                <div class="alert alert-success hidden" id="register-success">
+                    Registo bem-sucedido! O seu ID é: <strong id="generated-id"></strong>
+                </div>
+                
+                <form id="register-form">
+                    <h3 class="section-title">Criar Nova Conta</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="reg-phone">Nº Telemóvel *</label>
+                            <input type="tel" class="form-input" id="reg-phone" placeholder="912345678" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="reg-order">Número de Ordem *</label>
+                            <input type="text" class="form-input" id="reg-order" placeholder="Número de ordem" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="reg-name">Nome Completo *</label>
+                            <input type="text" class="form-input" id="reg-name" placeholder="Seu nome completo" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="reg-pharmacy">Nome da Farmácia *</label>
+                            <input type="text" class="form-input" id="reg-pharmacy" placeholder="Nome da farmácia" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="reg-password">Password *</label>
+                        <input type="password" class="form-input" id="reg-password" placeholder="Crie uma password" required>
+                    </div>
+                    
+                    <button type="button" class="btn btn-primary" id="register-btn">
+                        <i class="fas fa-user-plus"></i> Criar Registo
+                    </button>
+                    
+                    <div style="margin-top: 20px; text-align: center;">
+                        <p>Já tem conta?</p>
+                        <button type="button" class="btn btn-secondary" id="show-login-btn">
+                            <i class="fas fa-sign-in-alt"></i> Fazer Login
+                        </button>
+                    </div>
+                </form>
+                
+                <form id="login-form" class="hidden">
+                    <h3 class="section-title">Entrar na Conta</h3>
+                    <div class="form-group">
+                        <label class="form-label" for="login-order">Número de Ordem *</label>
+                        <input type="text" class="form-input" id="login-order" placeholder="Seu número de ordem" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="login-password">Password *</label>
+                        <input type="password" class="form-input" id="login-password" placeholder="Sua password" required>
+                    </div>
+                    <button type="button" class="btn btn-primary" id="login-btn">
+                        <i class="fas fa-sign-in-alt"></i> Entrar
+                    </button>
+                    
+                    <div style="margin-top: 20px; text-align: center;">
+                        <p>Não tem conta?</p>
+                        <button type="button" class="btn btn-secondary" id="show-register-btn">
+                            <i class="fas fa-user-plus"></i> Fazer Registo
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="page" id="consultation-request">
+                <h2 class="page-title">
+                    <i class="fas fa-plus-circle"></i>
+                    Nova Consulta
+                </h2>
+                
+                <div class="alert alert-success hidden" id="consultation-success">
+                    Consulta registada com sucesso! A procurar médico disponível...
+                </div>
+                
+                <div class="alert alert-error hidden" id="consultation-no-doctor">
+                    Consulta registada, mas não há médico disponível no momento.
+                </div>
+                
+                <form id="consultation-form">
+                    <h3 class="section-title">Informações Básicas</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="patient-name">Nome do Paciente *</label>
+                            <input type="text" class="form-input" id="patient-name" placeholder="Nome completo" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="patient-phone">Telemóvel *</label>
+                            <input type="tel" class="form-input" id="patient-phone" placeholder="912345678" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="patient-gender">Sexo *</label>
+                            <select class="form-select" id="patient-gender" required>
+                                <option value="">Selecionar</option>
+                                <option value="masculino">Masculino</option>
+                                <option value="feminino">Feminino</option>
+                                <option value="outro">Outro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="patient-age">Idade *</label>
+                            <input type="number" class="form-input" id="patient-age" placeholder="Idade" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="patient-weight">Peso (kg)*</label>
+                            <input type="number" class="form-input" id="patient-weight" placeholder="Peso em kg" required>
+                        </div>
+                    </div>
+                    
+                    <h3 class="section-title">Triagem</h3>
+                    <div class="form-group">
+                        <label class="form-label" for="disease-classification">Classificação da Doença *</label>
+                        <select class="form-select" id="disease-classification" required>
+                            <option value="">Selecionar classificação...</option>
+                            <optgroup label="Pele ou tecido subcutâneo">
+                                <option value="Pele - Infeção">Infeção</option>
+                                <option value="Pele - Inflamação/Alérgicas ou Hipersensibilidade">Inflamação/Alérgicas ou Hipersensibilidade</option>
+                                <option value="Pele - Queimadura solar">Queimadura solar</option>
+                                <option value="Pele - Não identificado">Não identificado</option>
+                            </optgroup>
+                            <optgroup label="Sistema respiratório">
+                                <option value="Sistema respiratório - Inflamação alérgicas ou de hipersensibilidade">Inflamação alérgicas ou de hipersensibilidade</option>
+                                <option value="Sistema respiratório - Infeção">Infeção</option>
+                                <option value="Sistema respiratório - Ajuste de medicamento">Ajuste de medicamento</option>
+                            </optgroup>
+                            <optgroup label="Sistema circulatório">
+                                <option value="Sistema circulatório - Doenças hipertensivo">Doenças hipertensivo</option>
+                                <option value="Sistema circulatório - Hipotensão">Hipotensão</option>
+                                <option value="Sistema circulatório - Insuficiência venosa periférica">Insuficiência venosa periférica</option>
+                                <option value="Sistema circulatório - Ajuste de medicamento">Ajuste de medicamento</option>
+                                <option value="Sistema circulatório - Outro (tem resultado de exame para analisar)">Outro (tem resultado de exame para analisar)</option>
+                            </optgroup>
+                            <optgroup label="Sistema digestivo">
+                                <option value="Sistema digestivo - Trato superior">Trato superior</option>
+                                <option value="Sistema digestivo - Trato inferior (tem resultado de exame para analisar)">Trato inferior (tem resultado de exame para analisar)</option>
+                                <option value="Sistema digestivo - Ajuste de medicamento">Ajuste de medicamento</option>
+                            </optgroup>
+                            <optgroup label="Sistema geniturinário">
+                                <option value="Sistema geniturinário - Vaginite/vulvite">Vaginite/vulvite</option>
+                                <option value="Sistema geniturinário - Infeção do trato urinário inferior">Infeção do trato urinário inferior</option>
+                            </optgroup>
+                            <optgroup label="Doenças endócrinas">
+                                <option value="Doenças endócrinas - Transtornos pós procedimento">Transtornos pós procedimento</option>
+                                <option value="Doenças endócrinas - Transtornos da regulação da glicose">Transtornos da regulação da glicose</option>
+                                <option value="Doenças endócrinas - Ajuste de medicamento">Ajuste de medicamento</option>
+                            </optgroup>
+                            <optgroup label="Outras classificações">
+                                <option value="Transtornos inflamatórios da orelha externa">Transtornos inflamatórios da orelha externa</option>
+                                <option value="Transtornos de insônia">Transtornos de insônia</option>
+                                <option value="Transtornos musculares">Transtornos musculares</option>
+                                <option value="Consulta sobre gravidez, parto, contraceptivo">Consulta sobre gravidez, parto, contraceptivo</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="consultation-reason">Razão para Consulta *</label>
+                        <textarea class="form-textarea" id="consultation-reason" rows="3" placeholder="Descreva o motivo da consulta" required></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="temperature">Temperatura Corporal (°C)*</label>
+                            <input type="number" step="0.1" class="form-input" id="temperature" placeholder="Ex: 36.5" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="blood-pressure">Tensão Arterial*</label>
+                            <input type="text" class="form-input" id="blood-pressure" placeholder="Ex: 120/80" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="glucose">Glicemia (mg/dL)</label>
+                            <input type="number" class="form-input" id="glucose" placeholder="Valor de glicemia">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="cholesterol">Colesterol (mg/dL)</label>
+                            <input type="number" class="form-input" id="cholesterol" placeholder="Valor de colesterol">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="allergies">Alergias</label>
+                        <input type="text" class="form-input" id="allergies" placeholder="Lista de alergias conhecidas">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="other-info">Medicamentos Atuais e Outras Indicações</label>
+                        <textarea class="form-textarea" id="other-info" rows="3" placeholder="Liste os medicamentos atuais e outras informações relevantes"></textarea>
+                    </div>
+                    
+                    <!-- Seção de fotos -->
+                    <h3 class="section-title">Fotos</h3>
+                    <div class="photo-section">
+                        <div class="form-group">
+                            <label class="form-label">Adicionar Fotos (máximo 5)</label>
+                            <input type="file" class="form-input" id="photo-input" accept="image/*" multiple>
+                        </div>
+                        <div class="photo-preview-container" id="photo-preview-container">
+                            <!-- As fotos serão adicionadas aqui -->
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-primary" id="submit-consultation">
+                        <i class="fas fa-paper-plane"></i> Criar Registo e Enviar para Médico
+                    </button>
+                </form>
+            </div>
+
+            <div class="page" id="my-data">
+                <h2 class="page-title">
+                    <i class="fas fa-user"></i>
+                    Os Meus
+                </h2>
+                
+                <div class="profile-info">
+                    <h3 class="section-title">Os Meus Dados</h3>
+                    <div class="profile-field">
+                        <div class="profile-label">ID</div>
+                        <div class="profile-value" id="profile-id">-</div>
+                    </div>
+                    <div class="profile-field">
+                        <div class="profile-label">Nome</div>
+                        <div class="profile-value" id="profile-name">-</div>
+                    </div>
+                    <div class="profile-field">
+                        <div class="profile-label">Nº Telemóvel</div>
+                        <div class="profile-value" id="profile-phone">-</div>
+                    </div>
+                    <div class="profile-field">
+                        <div class="profile-label">Número de Ordem</div>
+                        <div class="profile-value" id="profile-order">-</div>
+                    </div>
+                    <div class="profile-field">
+                        <div class="profile-label">Farmácia</div>
+                        <div class="profile-value" id="profile-pharmacy">-</div>
+                    </div>
+                    
+                    <div class="profile-actions">
+                        <button class="btn btn-secondary" id="edit-profile-btn">
+                            <i class="fas fa-edit"></i> Editar Dados
+                        </button>
+                        <button class="btn btn-secondary" id="change-password-btn">
+                            <i class="fas fa-key"></i> Alterar Password
+                        </button>
+                        <button class="btn btn-danger" id="logout-btn">
+                            <i class="fas fa-sign-out-alt"></i> Terminar Sessão
+                        </button>
+                    </div>
+                </div>
+                
+                <h3 class="section-title">Histórico de Consultas</h3>
+                
+                <div class="search-box">
+                    <input type="text" class="search-input" id="search-consultations" placeholder="Pesquisar por nome do paciente...">
+                </div>
+                
+                <div id="consultation-history">
+                    <!-- Consultas serão carregadas aqui -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modais -->
+    <div class="modal" id="consultation-record-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Registo da Consulta</h3>
+                <button class="modal-close" id="close-record-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="consultation-details" id="consultation-record-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="change-password-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Alterar Password</h3>
+                <button class="modal-close" id="close-password-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="change-password-form">
+                    <div class="form-group">
+                        <label class="form-label" for="current-password">Password Atual *</label>
+                        <input type="password" class="form-input" id="current-password" placeholder="Password atual" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="new-password">Nova Password *</label>
+                        <input type="password" class="form-input" id="new-password" placeholder="Nova password" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="confirm-password">Confirmar Nova Password *</label>
+                        <input type="password" class="form-input" id="confirm-password" placeholder="Confirmar nova password" required>
+                    </div>
+                    <button type="button" class="btn btn-primary" id="save-password-btn">
+                        <i class="fas fa-save"></i> Guardar Nova Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Hangup -->
+    <div class="modal confirmation-modal" id="hangup-confirmation-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirmar Término</h3>
+                <button class="modal-close" id="close-hangup-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Tem a certeza que deseja terminar a consulta? Esta ação será comunicada ao médico.</p>
+                <div class="confirmation-actions">
+                    <button class="btn btn-secondary" id="cancel-hangup-btn">Cancelar</button>
+                    <button class="btn btn-danger" id="confirm-hangup-btn">Terminar Consulta</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nova Janela de Chamada MINIMIZADA NO TOPO -->
+    <div class="call-window" id="call-modal">
+        <div class="call-header">
+            <h3 class="call-title">Consulta em Andamento</h3>
+            <button class="call-close" id="call-close-btn">&times;</button>
+        </div>
+        <div class="call-body">
+            <div class="call-info">
+                <div class="call-timer" id="call-timer">00:00</div>
+                <div class="call-status" id="call-status">Conectado com médico</div>
+            </div>
+            <div class="call-actions">
+                <button class="call-action-btn mute" id="mute-btn">
+                    <i class="fas fa-microphone"></i>
+                    <span>Mudo</span>
+                </button>
+                <button class="call-action-btn end" id="end-call-btn">
+                    <i class="fas fa-phone-slash"></i>
+                    <span>Terminar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Imagem Ampliada -->
+    <div class="modal image-modal" id="image-modal">
+        <div class="modal-content image-modal-content">
+            <div class="image-modal-body">
+                <button class="image-close" id="close-image-modal">&times;</button>
+                <button class="image-nav prev" id="prev-image">&lt;</button>
+                <img id="modal-image" src="" alt="Imagem ampliada">
+                <button class="image-nav next" id="next-image">&gt;</button>
+                <div class="image-counter" id="image-counter">1/1</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração do Supabase
+        const SUPABASE_URL = 'https://wepdyzexevikboczqstx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlcGR5emV4ZXZpa2JvY3pxc3R4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxMDM1NzEsImV4cCI6MjA3NTY3OTU3MX0.edRnJHOWmY4dtakQFNOIuftEtZbSlpCbhLGdqBhUGSM';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Estado da aplicação
+        let currentUser = null;
+        let currentConsultationId = null;
+        let currentDoctorId = null;
+        let photos = [];
+        let activeSubscriptions = new Map();
+        let callTimer = null;
+        let callSeconds = 0;
+        let peerConnection = null;
+        let localStream = null;
+        let isMuted = false;
+        let currentImages = [];
+        let currentImageIndex = 0;
+        let hangupConfirmationTimeout = null;
+
+        // Serviços
+        const signalingService = {
+            async sendMessage(roomId, fromUser, toUser, messageType, sdp = null, candidate = null) {
+                try {
+                    const messageData = {
+                        room_id: roomId,
+                        from_user: fromUser,
+                        to_user: toUser,
+                        message_type: messageType
+                    };
+
+                    if (sdp) messageData.sdp = sdp;
+                    if (candidate) messageData.candidate = candidate;
+
+                    const { error } = await supabase
+                        .from('signaling_messages')
+                        .insert([messageData]);
+                    
+                    if (error) throw error;
+                    console.log(`Mensagem ${messageType} enviada para ${toUser}`);
+                    return true;
+                } catch (error) {
+                    console.error('Erro ao enviar mensagem signaling:', error);
+                    return false;
+                }
+            },
+
+            async getRoomByConsultation(consultationId) {
+                try {
+                    const { data, error } = await supabase
+                        .from('signaling_rooms')
+                        .select('*')
+                        .eq('consultation_id', consultationId)
+                        .single();
+                    
+                    if (error) throw error;
+                    return data;
+                } catch (error) {
+                    console.error('Erro ao buscar room:', error);
+                    return null;
+                }
+            },
+
+            async createRoom(roomData) {
+                try {
+                    const { data, error } = await supabase
+                        .from('signaling_rooms')
+                        .insert([roomData])
+                        .select()
+                        .single();
+                    
+                    if (error) throw error;
+                    return data;
+                } catch (error) {
+                    console.error('Erro ao criar room:', error);
+                    throw error;
+                }
+            }
+        };
+
+        const consultationService = {
+            async createConsultation(consultationData) {
+                try {
+                    const { data, error } = await supabase
+                        .from('consultations')
+                        .insert([consultationData])
+                        .select()
+                        .single();
+                    
+                    if (error) throw error;
+                    return data;
+                } catch (error) {
+                    console.error('Erro ao criar consulta:', error);
+                    throw error;
+                }
+            },
+
+            async updateStatus(consultationId, status, doctorId = null) {
+                try {
+                    const updateData = { status };
+                    if (doctorId) updateData.doctor_id = doctorId;
+                    
+                    const { error } = await supabase
+                        .from('consultations')
+                        .update(updateData)
+                        .eq('id', consultationId);
+                    
+                    if (error) throw error;
+                    return true;
+                } catch (error) {
+                    console.error('Erro ao atualizar status:', error);
+                    return false;
+                }
+            },
+
+            async getConsultation(consultationId) {
+                try {
+                    const { data, error } = await supabase
+                        .from('consultations')
+                        .select('*')
+                        .eq('id', consultationId)
+                        .single();
+                    
+                    if (error) throw error;
+                    return data;
+                } catch (error) {
+                    console.error('Erro ao buscar consulta:', error);
+                    return null;
+                }
+            },
+
+            async getPharmacistConsultations(pharmacistId, searchTerm = '') {
+                try {
+                    let query = supabase
+                        .from('consultations')
+                        .select('*')
+                        .eq('pharmacist_id', pharmacistId)
+                        .order('created_at', { ascending: false });
+
+                    const { data, error } = await query;
+                    
+                    if (error) throw error;
+                    
+                    if (searchTerm) {
+                        return data.filter(consultation => 
+                            consultation.patient_name.toLowerCase().includes(searchTerm.toLowerCase())
+                        );
+                    }
+                    
+                    return data;
+                } catch (error) {
+                    console.error('Erro ao buscar consultas:', error);
+                    return [];
+                }
+            }
+        };
+
+        // Inicialização da aplicação
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+            setupEventListeners();
+            setupImageModal();
+        });
+
+        function initApp() {
+            const savedUser = localStorage.getItem('drgo_current_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                if (currentUser && currentUser.pharmacist_id) {
+                    showApp();
+                    initializeSubscriptions();
+                    checkActiveConsultation();
+                }
+            }
+        }
+
+        async function checkActiveConsultation() {
+            try {
+                const { data: activeConsultation, error } = await supabase
+                    .from('consultations')
+                    .select('*')
+                    .eq('pharmacist_id', currentUser.pharmacist_id)
+                    .eq('status', 'in-call')
+                    .single();
+
+                if (activeConsultation && !error) {
+                    console.log('Consultação ativa encontrada:', activeConsultation.id);
+                    currentConsultationId = activeConsultation.id;
+                    currentDoctorId = activeConsultation.doctor_id;
+                    showCallWindow();
+                    startCallTimer();
+                }
+            } catch (error) {
+                console.error('Erro ao verificar consulta ativa:', error);
+            }
+        }
+
+        // SUBSCRIPTIONS
+        function initializeSubscriptions() {
+            if (!currentUser) return;
+
+            // Limpar subscriptions existentes
+            cleanupSubscriptions();
+
+            // Subscription para consultas
+            const consultationSubscription = supabase
+                .channel(`pharmacist-consultations-${currentUser.pharmacist_id}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: 'UPDATE',
+                        schema: 'public',
+                        table: 'consultations',
+                        filter: `pharmacist_id=eq.${currentUser.pharmacist_id}`
+                    },
+                    (payload) => {
+                        handleConsultationUpdate(payload);
+                    }
+                )
+                .subscribe();
+
+            activeSubscriptions.set('consultations', consultationSubscription);
+
+            // Subscription para signaling
+            const signalingSubscription = supabase
+                .channel(`pharmacist-signaling-${currentUser.pharmacist_id}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'signaling_messages',
+                        filter: `to_user=eq.${currentUser.pharmacist_id}`
+                    },
+                    (payload) => {
+                        handleSignalingMessage(payload.new);
+                    }
+                )
+                .subscribe();
+
+            activeSubscriptions.set('signaling', signalingSubscription);
+        }
+
+        function cleanupSubscriptions() {
+            activeSubscriptions.forEach((subscription, key) => {
+                try {
+                    subscription.unsubscribe();
+                } catch (error) {
+                    console.error(`Erro ao remover subscription ${key}:`, error);
+                }
+            });
+            activeSubscriptions.clear();
+        }
+
+        async function handleConsultationUpdate(payload) {
+            const consultation = payload.new;
+            
+            console.log(`Consulta ${consultation.id} atualizada para: ${consultation.status}`);
+            
+            switch(consultation.status) {
+                case 'in-call':
+                    await startCallWithDoctor(consultation.id);
+                    break;
+                case 'rejected':
+                case 'completed':
+                    endWebRTCCall();
+                    break;
+            }
+            
+            if (document.getElementById('my-data').classList.contains('active')) {
+                loadConsultationHistory();
+            }
+        }
+
+        async function startCallWithDoctor(consultationId) {
+            try {
+                const consultation = await consultationService.getConsultation(consultationId);
+                if (!consultation || !consultation.doctor_id) {
+                    console.error('Doctor ID não encontrado');
+                    return;
+                }
+                
+                currentConsultationId = consultationId;
+                currentDoctorId = consultation.doctor_id;
+                
+                console.log(`Iniciando chamada com médico: ${currentDoctorId}`);
+                
+                await initializeWebRTC();
+                
+                showCallWindow();
+                startCallTimer();
+                
+            } catch (error) {
+                console.error('Erro ao iniciar chamada:', error);
+            }
+        }
+
+        function handleSignalingMessage(message) {
+            if (!peerConnection) return;
+
+            console.log(`Processando mensagem: ${message.message_type}`);
+
+            try {
+                switch(message.message_type) {
+                    case 'answer':
+                        if (peerConnection.signalingState === 'have-local-offer') {
+                            handleAnswer(message);
+                        }
+                        break;
+                    case 'candidate':
+                        handleCandidate(message);
+                        break;
+                    case 'hangup':
+                        handleHangup(message);
+                        break;
+                    case 'doctor_hungup':
+                        handleDoctorHungup(message);
+                        break;
+                }
+            } catch (error) {
+                console.error('Erro ao processar mensagem:', error);
+            }
+        }
+
+        // WEBRTC
+        async function initializeWebRTC() {
+            try {
+                console.log('🎯 Inicializando WebRTC...');
+
+                const configuration = {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' }
+                    ]
+                };
+                
+                peerConnection = new RTCPeerConnection(configuration);
+
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        sendSignalingMessage('candidate', null, JSON.stringify(event.candidate));
+                    }
+                };
+
+                peerConnection.onconnectionstatechange = () => {
+                    if (!peerConnection) return;
+                    console.log('📡 Estado da conexão:', peerConnection.connectionState);
+                    updateCallStatus(peerConnection.connectionState);
+                };
+
+                peerConnection.ontrack = (event) => {
+                    console.log('🎧 Stream remoto recebido - tracks:', event.streams[0].getTracks().length);
+                    
+                    const remoteStream = event.streams[0];
+                    const audio = document.createElement('audio');
+                    audio.id = 'remote-audio-pharmacist';
+                    audio.srcObject = remoteStream;
+                    audio.autoplay = true;
+                    audio.style.display = 'none';
+                    
+                    const oldAudio = document.getElementById('remote-audio-pharmacist');
+                    if (oldAudio) oldAudio.remove();
+                    
+                    document.body.appendChild(audio);
+                    audio.play().catch(e => console.log("🔇 Autoplay:", e.message));
+                };
+
+                // Obter stream local
+                localStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }, 
+                    video: false 
+                });
+                
+                // Adicionar tracks locais
+                localStream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, localStream);
+                });
+
+                // Criar e enviar offer
+                console.log('🔄 Criando offer...');
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                await sendSignalingMessage('offer', JSON.stringify(offer));
+                
+                console.log('✅ WebRTC inicializado - offer enviada');
+
+            } catch (error) {
+                console.error('❌ Erro na inicialização do WebRTC:', error);
+                throw error;
+            }
+        }
+
+        async function handleAnswer(message) {
+            try {
+                console.log('🎯 Processando ANSWER recebido do médico');
+                
+                let answerData;
+                
+                if (typeof message.sdp === 'string') {
+                    answerData = JSON.parse(message.sdp);
+                } else {
+                    answerData = message.sdp;
+                }
+                
+                if (!answerData || !answerData.type) {
+                    console.error('❌ Estrutura do answer inválida');
+                    return;
+                }
+                
+                if (!peerConnection) return;
+                
+                await peerConnection.setRemoteDescription(answerData);
+                console.log('✅ RemoteDescription definido com sucesso!');
+                
+            } catch (error) {
+                console.error('❌ Erro ao processar answer:', error);
+            }
+        }
+
+        async function handleCandidate(message) {
+            try {
+                const candidate = JSON.parse(message.candidate);
+                
+                if (!peerConnection.remoteDescription) {
+                    console.log('Remote description não definido, aguardando...');
+                    return;
+                }
+                
+                await peerConnection.addIceCandidate(candidate);
+                console.log('ICE candidate adicionado');
+            } catch (error) {
+                console.error('Erro ao adicionar ICE candidate:', error);
+            }
+        }
+
+        function handleHangup(message) {
+            console.log('Hangup recebido do médico');
+            endWebRTCCall();
+            showMessage('Médico terminou a consulta', 'info');
+        }
+
+        function handleDoctorHungup(message) {
+            console.log('Doctor hungup recebido:', message);
+            endWebRTCCall();
+            showMessage('Médico terminou a consulta', 'info');
+        }
+
+        async function sendSignalingMessage(messageType, sdp = null, candidate = null) {
+            if (!currentConsultationId || !currentDoctorId) {
+                console.error('Não é possível enviar mensagem - consultationId ou doctorId faltando');
+                return;
+            }
+
+            try {
+                const room = await signalingService.getRoomByConsultation(currentConsultationId);
+                if (!room) {
+                    console.error('Room não encontrada para a consulta');
+                    return;
+                }
+
+                const success = await signalingService.sendMessage(
+                    room.id,
+                    currentUser.pharmacist_id,
+                    currentDoctorId,
+                    messageType,
+                    sdp,
+                    candidate
+                );
+
+                if (!success) {
+                    console.error('Falha ao enviar mensagem signaling');
+                }
+            } catch (error) {
+                console.error('Erro ao enviar mensagem signaling:', error);
+            }
+        }
+
+        // Gestão da Chamada
+        function showCallWindow() {
+            document.getElementById('call-modal').classList.add('active');
+            updateCallStatus('connecting');
+        }
+
+        function hideCallWindow() {
+            document.getElementById('call-modal').classList.remove('active');
+        }
+
+        function updateCallStatus(status) {
+            const statusElement = document.getElementById('call-status');
+            const statusMap = {
+                'connecting': 'Conectando...',
+                'connected': 'Conectado com médico',
+                'disconnected': 'Desconectado',
+                'failed': 'Falha na conexão',
+                'closed': 'Chamada terminada'
+            };
+            
+            statusElement.textContent = statusMap[status] || status;
+        }
+
+        function startCallTimer() {
+            callSeconds = 0;
+            updateCallTimer();
+            
+            callTimer = setInterval(() => {
+                callSeconds++;
+                updateCallTimer();
+            }, 1000);
+        }
+
+        function updateCallTimer() {
+            const minutes = Math.floor(callSeconds / 60);
+            const seconds = callSeconds % 60;
+            const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('call-timer').textContent = timeString;
+        }
+
+        function toggleMute() {
+            if (!localStream) return;
+            
+            isMuted = !isMuted;
+            localStream.getAudioTracks().forEach(track => {
+                track.enabled = !isMuted;
+            });
+            
+            updateMuteButton();
+        }
+
+        function updateMuteButton() {
+            const muteBtn = document.getElementById('mute-btn');
+            const icon = muteBtn.querySelector('i');
+            const text = muteBtn.querySelector('span');
+            
+            if (isMuted) {
+                muteBtn.classList.add('active');
+                icon.className = 'fas fa-microphone-slash';
+                text.textContent = 'Ativar';
+            } else {
+                muteBtn.classList.remove('active');
+                icon.className = 'fas fa-microphone';
+                text.textContent = 'Mudo';
+            }
+        }
+
+        function requestHangup() {
+            document.getElementById('hangup-confirmation-modal').classList.add('active');
+        }
+
+        async function confirmHangup() {
+            try {
+                // Enviar hungup para médico
+                await sendSignalingMessage('pharmacist_hungup');
+                
+                // Atualizar status da consulta
+                await consultationService.updateStatus(currentConsultationId, 'rejected');
+                
+                document.getElementById('hangup-confirmation-modal').classList.remove('active');
+                endWebRTCCall();
+                showMessage('Consulta terminada', 'success');
+                
+            } catch (error) {
+                console.error('Erro ao terminar consulta:', error);
+                showMessage('Erro ao terminar consulta', 'error');
+            }
+        }
+
+        function cancelHangup() {
+            document.getElementById('hangup-confirmation-modal').classList.remove('active');
+        }
+
+        function endWebRTCCall() {
+            console.log('🔧 Terminando chamada WebRTC...');
+            
+            if (callTimer) {
+                clearInterval(callTimer);
+                callTimer = null;
+            }
+            
+            hideCallWindow();
+            
+            if (currentDoctorId && currentConsultationId) {
+                console.log('📤 Enviando hangup para médico:', currentDoctorId);
+                sendSignalingMessage('hangup');
+            }
+            
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+            
+            currentConsultationId = null;
+            currentDoctorId = null;
+            callSeconds = 0;
+            isMuted = false;
+            
+            updateMuteButton();
+            
+            // Recarregar histórico se na página correta
+            if (document.getElementById('my-data').classList.contains('active')) {
+                loadConsultationHistory();
+            }
+        }
+
+        function showMessage(message, type = 'info') {
+            // Implementação simples de mensagem
+            alert(message);
+        }
+
+        // Gestão de Imagens
+        function setupImageModal() {
+            const imageModal = document.getElementById('image-modal');
+            const modalImage = document.getElementById('modal-image');
+            const closeBtn = document.getElementById('close-image-modal');
+            const prevBtn = document.getElementById('prev-image');
+            const nextBtn = document.getElementById('next-image');
+            const counter = document.getElementById('image-counter');
+
+            closeBtn.addEventListener('click', () => {
+                imageModal.classList.remove('active');
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && imageModal.classList.contains('active')) {
+                    imageModal.classList.remove('active');
+                }
+            });
+
+            prevBtn.addEventListener('click', showPrevImage);
+            nextBtn.addEventListener('click', showNextImage);
+
+            document.addEventListener('keydown', (e) => {
+                if (!imageModal.classList.contains('active')) return;
+                
+                if (e.key === 'ArrowLeft') {
+                    showPrevImage();
+                } else if (e.key === 'ArrowRight') {
+                    showNextImage();
+                }
+            });
+
+            imageModal.addEventListener('click', (e) => {
+                if (e.target === imageModal) {
+                    imageModal.classList.remove('active');
+                }
+            });
+        }
+
+        function showImageModal(images, startIndex = 0) {
+            currentImages = images;
+            currentImageIndex = startIndex;
+            
+            const imageModal = document.getElementById('image-modal');
+            const modalImage = document.getElementById('modal-image');
+            const counter = document.getElementById('image-counter');
+            
+            if (currentImages.length > 0) {
+                modalImage.src = currentImages[currentImageIndex];
+                counter.textContent = `${currentImageIndex + 1}/${currentImages.length}`;
+                
+                document.getElementById('prev-image').style.display = currentImages.length > 1 ? 'flex' : 'none';
+                document.getElementById('next-image').style.display = currentImages.length > 1 ? 'flex' : 'none';
+                counter.style.display = currentImages.length > 1 ? 'block' : 'none';
+                
+                imageModal.classList.add('active');
+            }
+        }
+
+        function showNextImage() {
+            if (currentImages.length > 1) {
+                currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+                document.getElementById('modal-image').src = currentImages[currentImageIndex];
+                document.getElementById('image-counter').textContent = `${currentImageIndex + 1}/${currentImages.length}`;
+            }
+        }
+
+        function showPrevImage() {
+            if (currentImages.length > 1) {
+                currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+                document.getElementById('modal-image').src = currentImages[currentImageIndex];
+                document.getElementById('image-counter').textContent = `${currentImageIndex + 1}/${currentImages.length}`;
+            }
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Navegação
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const pageId = this.getAttribute('data-page');
+                    showPage(pageId);
+                    
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // Autenticação
+            document.getElementById('show-login-btn').addEventListener('click', function() {
+                document.getElementById('register-form').classList.add('hidden');
+                document.getElementById('login-form').classList.remove('hidden');
+            });
+            
+            document.getElementById('show-register-btn').addEventListener('click', function() {
+                document.getElementById('login-form').classList.add('hidden');
+                document.getElementById('register-form').classList.remove('hidden');
+            });
+
+            document.getElementById('register-btn').addEventListener('click', handleRegister);
+            document.getElementById('login-btn').addEventListener('click', handleLogin);
+            document.getElementById('logout-btn').addEventListener('click', handleLogout);
+
+            // Consulta
+            document.getElementById('submit-consultation').addEventListener('click', handleSubmitConsultation);
+
+            // Pesquisa
+            document.getElementById('search-consultations').addEventListener('input', function() {
+                loadConsultationHistory(this.value);
+            });
+
+            // Modais
+            document.getElementById('close-record-modal').addEventListener('click', function() {
+                document.getElementById('consultation-record-modal').classList.remove('active');
+            });
+            
+            document.getElementById('change-password-btn').addEventListener('click', function() {
+                document.getElementById('change-password-modal').classList.add('active');
+            });
+            
+            document.getElementById('close-password-modal').addEventListener('click', function() {
+                document.getElementById('change-password-modal').classList.remove('active');
+                document.getElementById('change-password-form').reset();
+            });
+            
+            document.getElementById('save-password-btn').addEventListener('click', handleChangePassword);
+
+            // Chamada WebRTC
+            document.getElementById('mute-btn').addEventListener('click', toggleMute);
+            document.getElementById('end-call-btn').addEventListener('click', requestHangup);
+            document.getElementById('call-close-btn').addEventListener('click', requestHangup);
+
+            // Confirmação de Hangup
+            document.getElementById('confirm-hangup-btn').addEventListener('click', confirmHangup);
+            document.getElementById('cancel-hangup-btn').addEventListener('click', cancelHangup);
+            document.getElementById('close-hangup-modal').addEventListener('click', cancelHangup);
+
+            // Fotos
+            document.getElementById('photo-input').addEventListener('change', handlePhotoUpload);
+
+            // Edição de perfil
+            document.getElementById('edit-profile-btn').addEventListener('click', enableProfileEditing);
+        }
+
+        // Autenticação
+        async function handleRegister() {
+            const phone = document.getElementById('reg-phone').value;
+            const order = document.getElementById('reg-order').value;
+            const name = document.getElementById('reg-name').value;
+            const pharmacy = document.getElementById('reg-pharmacy').value;
+            const password = document.getElementById('reg-password').value;
+            
+            if (!phone || !order || !name || !pharmacy || !password) {
+                alert('Por favor, preencha todos os campos obrigatórios.');
+                return;
+            }
+            
+            try {
+                const { data: existing } = await supabase
+                    .from('pharmacists')
+                    .select('*')
+                    .eq('order_number', order)
+                    .single();
+                
+                if (existing) {
+                    alert('Já existe um farmacêutico com este número de ordem.');
+                    return;
+                }
+                
+                const pharmacistId = order + Math.floor(Math.random() * 90 + 10);
+                
+                const { data, error } = await supabase
+                    .from('pharmacists')
+                    .insert([{
+                        pharmacist_id: pharmacistId,
+                        phone: phone,
+                        order_number: order,
+                        name: name,
+                        pharmacy: pharmacy,
+                        password: password
+                    }])
+                    .select()
+                    .single();
+                
+                if (error) throw error;
+                
+                currentUser = data;
+                localStorage.setItem('drgo_current_user', JSON.stringify(data));
+                
+                document.getElementById('generated-id').textContent = pharmacistId;
+                document.getElementById('register-success').classList.remove('hidden');
+                
+                setTimeout(() => {
+                    showApp();
+                    loadProfileData();
+                }, 2000);
+                
+            } catch (error) {
+                alert('Erro no registo: ' + error.message);
+            }
+        }
+
+        async function handleLogin() {
+            const order = document.getElementById('login-order').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (!order || !password) {
+                alert('Por favor, preencha todos os campos.');
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabase
+                    .from('pharmacists')
+                    .select('*')
+                    .eq('order_number', order)
+                    .eq('password', password)
+                    .single();
+                
+                if (error || !data) {
+                    alert('Número de ordem ou password incorretos.');
+                    return;
+                }
+                
+                currentUser = data;
+                localStorage.setItem('drgo_current_user', JSON.stringify(data));
+                showApp();
+                loadProfileData();
+                await loadConsultationHistory();
+                
+            } catch (error) {
+                alert('Erro no login: ' + error.message);
+            }
+        }
+
+        function handleLogout() {
+            if (confirm('Tem a certeza que deseja terminar a sessão?')) {
+                cleanupSubscriptions();
+                endWebRTCCall();
+                
+                currentUser = null;
+                localStorage.removeItem('drgo_current_user');
+                showAuthPage();
+            }
+        }
+
+        function showAuthPage() {
+            document.getElementById('nav-menu').style.display = 'none';
+            document.getElementById('auth-page').classList.add('active');
+            document.querySelectorAll('.page:not(#auth-page)').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById('register-form').classList.remove('hidden');
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('register-form').reset();
+            document.getElementById('login-form').reset();
+        }
+
+        function showApp() {
+            document.getElementById('auth-page').classList.remove('active');
+            document.getElementById('nav-menu').style.display = 'flex';
+            document.getElementById('consultation-request').classList.add('active');
+            initializeSubscriptions();
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            
+            if (pageId === 'my-data') {
+                loadProfileData();
+                loadConsultationHistory();
+            }
+        }
+
+        function loadProfileData() {
+            if (!currentUser) return;
+            
+            document.getElementById('profile-id').textContent = currentUser.pharmacist_id;
+            document.getElementById('profile-name').textContent = currentUser.name;
+            document.getElementById('profile-phone').textContent = currentUser.phone;
+            document.getElementById('profile-order').textContent = currentUser.order_number;
+            document.getElementById('profile-pharmacy').textContent = currentUser.pharmacy;
+        }
+
+        function enableProfileEditing() {
+            document.getElementById('profile-name').innerHTML = `
+                <input type="text" class="form-input" id="edit-name" value="${currentUser.name}">
+            `;
+            document.getElementById('profile-phone').innerHTML = `
+                <input type="tel" class="form-input" id="edit-phone" value="${currentUser.phone}">
+            `;
+            document.getElementById('profile-pharmacy').innerHTML = `
+                <input type="text" class="form-input" id="edit-pharmacy" value="${currentUser.pharmacy}">
+            `;
+            
+            document.getElementById('edit-profile-btn').innerHTML = '<i class="fas fa-save"></i> Guardar Alterações';
+            document.getElementById('edit-profile-btn').id = 'save-profile-btn';
+            
+            document.getElementById('save-profile-btn').addEventListener('click', saveProfile);
+        }
+
+        async function saveProfile() {
+            const name = document.getElementById('edit-name').value;
+            const phone = document.getElementById('edit-phone').value;
+            const pharmacy = document.getElementById('edit-pharmacy').value;
+            
+            if (name && phone && pharmacy) {
+                try {
+                    const { data, error } = await supabase
+                        .from('pharmacists')
+                        .update({
+                            name: name,
+                            phone: phone,
+                            pharmacy: pharmacy
+                        })
+                        .eq('pharmacist_id', currentUser.pharmacist_id)
+                        .select()
+                        .single();
+                    
+                    if (error) throw error;
+                    
+                    currentUser = data;
+                    localStorage.setItem('drgo_current_user', JSON.stringify(data));
+                    loadProfileData();
+                    alert('Dados atualizados com sucesso!');
+                    
+                } catch (error) {
+                    alert('Erro ao atualizar dados: ' + error.message);
+                }
+            } else {
+                alert('Por favor, preencha todos os campos.');
+            }
+        }
+
+        async function handleChangePassword() {
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                alert('Por favor, preencha todos os campos.');
+                return;
+            }
+            
+            if (currentPassword !== currentUser.password) {
+                alert('Password atual incorreta.');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                alert('As novas passwords não coincidem.');
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabase
+                    .from('pharmacists')
+                    .update({ password: newPassword })
+                    .eq('pharmacist_id', currentUser.pharmacist_id)
+                    .select()
+                    .single();
+                
+                if (error) throw error;
+                
+                currentUser = data;
+                localStorage.setItem('drgo_current_user', JSON.stringify(data));
+                
+                document.getElementById('change-password-modal').classList.remove('active');
+                document.getElementById('change-password-form').reset();
+                alert('Password alterada com sucesso!');
+                
+            } catch (error) {
+                alert('Erro ao alterar password: ' + error.message);
+            }
+        }
+
+        // Consultas
+        async function handleSubmitConsultation() {
+            if (!currentUser) {
+                alert('Por favor, faça login primeiro.');
+                return;
+            }
+            
+            const patientName = document.getElementById('patient-name').value;
+            const patientPhone = document.getElementById('patient-phone').value;
+            const patientGender = document.getElementById('patient-gender').value;
+            const patientAge = document.getElementById('patient-age').value;
+            const patientWeight = document.getElementById('patient-weight').value;
+            const diseaseClassification = document.getElementById('disease-classification').value;
+            const consultationReason = document.getElementById('consultation-reason').value;
+            const temperature = document.getElementById('temperature').value;
+            const bloodPressure = document.getElementById('blood-pressure').value;
+            const glucose = document.getElementById('glucose').value;
+            const cholesterol = document.getElementById('cholesterol').value;
+            const allergies = document.getElementById('allergies').value;
+            const otherInfo = document.getElementById('other-info').value;
+            
+            if (!patientName || !patientPhone || !patientGender || !patientAge || !patientWeight || 
+                !diseaseClassification || !consultationReason || !temperature || !bloodPressure) {
+                alert('Por favor, preencha todos os campos obrigatórios.');
+                return;
+            }
+            
+            try {
+                document.getElementById('consultation-success').classList.remove('hidden');
+                document.getElementById('consultation-no-doctor').classList.add('hidden');
+                
+                // Criar objeto de consulta com fotos
+                const consultationData = {
+                    patient_name: patientName,
+                    date: new Date().toISOString().split('T')[0],
+                    disease_classification: diseaseClassification,
+                    reason: consultationReason,
+                    status: 'searching',
+                    doctor: null,
+                    details: {
+                        phone: patientPhone,
+                        gender: patientGender,
+                        age: parseInt(patientAge),
+                        weight: parseInt(patientWeight),
+                        temperature: parseFloat(temperature),
+                        bloodPressure: bloodPressure,
+                        glucose: glucose ? parseInt(glucose) : null,
+                        cholesterol: cholesterol ? parseInt(cholesterol) : null,
+                        allergies: allergies || null,
+                        otherInfo: otherInfo || null
+                    },
+                    photos: photos.length > 0 ? photos : null,
+                    pharmacist_id: currentUser.pharmacist_id
+                };
+                
+                const consultation = await consultationService.createConsultation(consultationData);
+                
+                // Criar signaling room
+                const { data: room, error: roomError } = await signalingService.createRoom({
+                    consultation_id: consultation.id,
+                    pharmacist_id: currentUser.pharmacist_id,
+                    room_name: `consultation-${consultation.id}`,
+                    status: 'active'
+                });
+
+                if (roomError) {
+                    console.error('❌ Erro ao criar signaling room:', roomError);
+                } else {
+                    console.log('✅ Signaling room criada:', room);
+                }
+                
+                document.getElementById('consultation-form').reset();
+                photos = [];
+                document.getElementById('photo-preview-container').innerHTML = '';
+                
+                await loadConsultationHistory();
+                
+                setTimeout(() => {
+                    document.getElementById('consultation-success').classList.add('hidden');
+                }, 3000);
+                
+            } catch (error) {
+                alert('Erro ao criar consulta: ' + error.message);
+            }
+        }
+
+        async function retryConsultation(consultationId) {
+            try {
+                await consultationService.updateStatus(consultationId, 'searching');
+                await loadConsultationHistory();
+                alert('A procurar médico novamente...');
+                
+            } catch (error) {
+                console.error('Erro ao tentar novamente:', error);
+                alert('Erro ao tentar encontrar médico novamente: ' + error.message);
+            }
+        }
+
+        async function loadConsultationHistory(searchTerm = '') {
+            try {
+                if (!currentUser) return;
+                
+                const consultations = await consultationService.getPharmacistConsultations(currentUser.pharmacist_id, searchTerm);
+                
+                const container = document.getElementById('consultation-history');
+                container.innerHTML = '';
+                
+                if (consultations.length === 0) {
+                    container.innerHTML = '<p>Nenhuma consulta encontrada.</p>';
+                    return;
+                }
+                
+                consultations.forEach(consultation => {
+                    const card = document.createElement('div');
+                    card.className = 'consultation-card';
+                    
+                    let statusText, statusClass, additionalHTML = '';
+                    
+                    switch(consultation.status) {
+                        case 'completed':
+                            statusText = 'Concluída';
+                            statusClass = 'status-completed';
+                            break;
+                        case 'searching':
+                            statusText = 'A procurar médico...';
+                            statusClass = 'status-searching';
+                            
+                            additionalHTML = `
+                                <div class="searching-indicator">
+                                    <div class="spinner"></div>
+                                    <span>A procurar médico disponível...</span>
+                                </div>
+                            `;
+                            break;
+                        case 'in-call':
+                            statusText = 'Em chamada';
+                            statusClass = 'status-in-call';
+                            break;
+                        case 'rejected':
+                            statusText = 'Sem médico disponível';
+                            statusClass = 'status-rejected';
+                            
+                            additionalHTML = `
+                                <div class="alert alert-warning">
+                                    <p>Tenta mais tarde</p>
+                                </div>
+                            `;
+                            break;
+                        case 'no-doctor':
+                            statusText = 'Sem médico disponível';
+                            statusClass = 'status-rejected';
+                            
+                            additionalHTML = `
+                                <div class="alert alert-warning">
+                                    <p>Tenta mais tarde</p>
+                                </div>
+                            `;
+                            break;
+                        default:
+                            statusText = 'Sem médico disponível';
+                            statusClass = 'status-rejected';
+                    }
+                    
+                    card.innerHTML = `
+                        <div class="patient-name">${consultation.patient_name}</div>
+                        <div class="consultation-date">${formatDate(consultation.date)}</div>
+                        <div class="consultation-status ${statusClass}">${statusText}</div>
+                        <div><strong>Motivo:</strong> ${consultation.reason}</div>
+                        ${consultation.doctor ? `<div><strong>Médico:</strong> ${consultation.doctor}</div>` : ''}
+                        ${additionalHTML}
+                        <div class="consultation-actions">
+                            <button class="btn btn-secondary btn-small view-record-btn">
+                                <i class="fas fa-file-medical"></i> Registo
+                            </button>
+                            ${(consultation.status === 'rejected' || consultation.status === 'no-doctor') ? `
+                                <button class="btn btn-warning btn-small retry-consultation-btn" data-id="${consultation.id}">
+                                    <i class="fas fa-redo"></i> Tentar Novamente
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                    
+                    const viewBtn = card.querySelector('.view-record-btn');
+                    viewBtn.addEventListener('click', () => viewConsultationRecord(consultation));
+                    
+                    const retryBtn = card.querySelector('.retry-consultation-btn');
+                    if (retryBtn) {
+                        retryBtn.addEventListener('click', function() {
+                            const consultationId = this.getAttribute('data-id');
+                            retryConsultation(consultationId);
+                        });
+                    }
+                    
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar histórico:', error);
+                alert('Erro ao carregar histórico de consultas.');
+            }
+        }
+
+        function viewConsultationRecord(consultation) {
+            const content = document.getElementById('consultation-record-content');
+            const details = consultation.details || {};
+            
+            let detailsHTML = `
+                <div class="detail-row">
+                    <div class="detail-label">Paciente:</div>
+                    <div class="detail-value">${consultation.patient_name}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Data:</div>
+                    <div class="detail-value">${formatDate(consultation.date)}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Telemóvel:</div>
+                    <div class="detail-value">${details.phone || 'N/A'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Sexo:</div>
+                    <div class="detail-value">${details.gender || 'N/A'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Idade:</div>
+                    <div class="detail-value">${details.age ? details.age + ' anos' : 'N/A'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Peso:</div>
+                    <div class="detail-value">${details.weight ? details.weight + ' kg' : 'N/A'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Classificação:</div>
+                    <div class="detail-value">${consultation.disease_classification}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Motivo:</div>
+                    <div class="detail-value">${consultation.reason}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Temperatura:</div>
+                    <div class="detail-value">${details.temperature ? details.temperature + ' °C' : 'N/A'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Tensão Arterial:</div>
+                    <div class="detail-value">${details.bloodPressure || 'N/A'}</div>
+                </div>
+            `;
+            
+            if (details.glucose) detailsHTML += `<div class="detail-row"><div class="detail-label">Glicemia:</div><div class="detail-value">${details.glucose} mg/dL</div></div>`;
+            if (details.cholesterol) detailsHTML += `<div class="detail-row"><div class="detail-label">Colesterol:</div><div class="detail-value">${details.cholesterol} mg/dL</div></div>`;
+            if (details.allergies) detailsHTML += `<div class="detail-row"><div class="detail-label">Alergias:</div><div class="detail-value">${details.allergies}</div></div>`;
+            if (details.otherInfo) detailsHTML += `<div class="detail-row"><div class="detail-label">Medicamentos e Indicações:</div><div class="detail-value">${details.otherInfo}</div></div>`;
+            if (consultation.doctor) detailsHTML += `<div class="detail-row"><div class="detail-label">Médico:</div><div class="detail-value">${consultation.doctor}</div></div>`;
+            
+            // NOVOS CAMPOS DA CONSULTA
+            if (consultation.intervention_doctor) {
+                detailsHTML += `<div class="detail-row"><div class="detail-label">Intervenção do Médico:</div><div class="detail-value">${consultation.intervention_doctor}</div></div>`;
+            }
+            if (consultation.observation_doctor) {
+                detailsHTML += `<div class="detail-row"><div class="detail-label">Observações do Médico:</div><div class="detail-value">${consultation.observation_doctor}</div></div>`;
+            }
+            
+            // Mostrar fotos se existirem
+            if (consultation.photos && consultation.photos.length > 0) {
+                detailsHTML += `
+                    <div class="detail-row">
+                        <div class="detail-label">Fotos:</div>
+                        <div class="detail-value">
+                            <div class="photos-gallery" id="photos-gallery-${consultation.id}">
+                                ${consultation.photos.map((photo, index) => `
+                                    <div class="photo-item" data-photos='${JSON.stringify(consultation.photos).replace(/'/g, "&apos;")}' data-index="${index}">
+                                        <img src="${photo}" alt="Foto ${index + 1} da consulta">
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            content.innerHTML = detailsHTML;
+            
+            // ADICIONAR EVENT LISTENERS para as fotos
+            setTimeout(() => {
+                document.querySelectorAll('.photo-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const photosJson = this.getAttribute('data-photos').replace(/&apos;/g, "'");
+                        const photos = JSON.parse(photosJson);
+                        const startIndex = parseInt(this.getAttribute('data-index'));
+                        showImageModal(photos, startIndex);
+                    });
+                });
+            }, 100);
+            
+            document.getElementById('consultation-record-modal').classList.add('active');
+        }
+
+        // Função para processar upload de fotos
+        function handlePhotoUpload(e) {
+            const files = e.target.files;
+            
+            if (!files || files.length === 0) return;
+            
+            // Limitar a 5 fotos
+            if (photos.length + files.length > 5) {
+                alert('Máximo de 5 fotos permitidas.');
+                e.target.value = '';
+                return;
+            }
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                // Verificar se é imagem
+                if (!file.type.startsWith('image/')) {
+                    alert('Por favor, selecione apenas arquivos de imagem.');
+                    continue;
+                }
+                
+                // Verificar tamanho (máximo 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('A imagem é muito grande. Máximo 5MB permitido.');
+                    continue;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onload = (event) => {
+                    const photoData = event.target.result;
+                    photos.push(photoData);
+                    
+                    const preview = document.createElement('div');
+                    preview.className = 'photo-preview';
+                    preview.innerHTML = `
+                        <img src="${photoData}" alt="Pré-visualização">
+                        <button class="remove-photo" data-index="${photos.length - 1}">&times;</button>
+                    `;
+                    
+                    document.getElementById('photo-preview-container').appendChild(preview);
+                    
+                    const img = preview.querySelector('img');
+                    img.style.cursor = 'pointer';
+                    img.addEventListener('click', function() {
+                        showImageModal(photos, photos.length - 1);
+                    });
+                    
+                    preview.querySelector('.remove-photo').addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const index = parseInt(this.getAttribute('data-index'));
+                        photos.splice(index, 1);
+                        preview.remove();
+                    });
+                };
+                
+                reader.onerror = () => {
+                    alert('Erro ao carregar a foto. Tente novamente.');
+                };
+                
+                reader.readAsDataURL(file);
+            }
+            
+            e.target.value = '';
+        }
+
+        // Funções utilitárias
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('pt-PT');
+        }
+
+        // Expor funções globalmente para debugging
+        window.showImageModal = showImageModal;
+        window.endWebRTCCall = endWebRTCCall;
+        window.toggleMute = toggleMute;
+    </script>
+</body>
+</html>
